@@ -1,90 +1,83 @@
 /**
  * Created by stephan on 04.05.16.
  */
+import fs from 'fs';
+import path from 'path';
 
 import gulp from "gulp";
 import prompt from "gulp-prompt";
+import print from 'gulp-print';
+import rename from "gulp-rename";
 import replace from "gulp-replace";
 import gutil from "gulp-util";
+import runSequence from "run-sequence";
 
-var controllerTemplate = `sap.ui.define([
-	"sap/ui/core/mvc/Controller",
-	"sap/m/MessageToast"
-], function (Controller, MessageToast) {
-	"use strict";
 
-	return Controller.extend("{{namespace}}.controller.{{name}}", {
-
-		onShowHello : function () {
-			// read msg from i18n model
-			var oBundle = this.getView().getModel("i18n").getResourceBundle();
-			var sRecipient = this.getView().getModel().getProperty("/recipient/name");
-			var sMsg = oBundle.getText("helloMsg", [sRecipient]);
-
-			// show message
-			MessageToast.show(sMsg);
-		}
-	});
-
-});`;
-
-var viewTemplate = `<mvc:View
-	controllerName="{{namespace}}.controller.{{name}}"
-	xmlns="sap.m"
-	xmlns:mvc="sap.ui.core.mvc">
-</mvc:View>`;
-
+const handleBarsReg = /\{\{([^}]+)\}\}/g;
+const fileNameReg = /\_\_([^_]+)\_\_/g;
 
 function stringSrc(filename, string) {
-    var src = require('stream').Readable({ objectMode: true })
+    var src = require('stream').Readable({ objectMode: true });
     src._read = function () {
-        this.push(new gutil.File({ cwd: "", base: "", path: filename, contents: new Buffer(string) }))
+        this.push(new gutil.File({ cwd: "", base: "", path: filename, contents: new Buffer(string) }));
         this.push(null)
     };
     return src
 }
 
 
-var tempDescrForView = {
-    params: [
-        { name: "namespace", description: "Namespace", default: () => {
-            var m;
-            try {
-                m = require("./manifest.json");
-            } catch(e) {
-                return
-            }
-            if (m && m["sap.app"] && m["sap.app"]["id"]) {
-                return m["sap.app"]["id"];
-            }
-        } },
-        { name: "name", description: "Viewname"}
-    ],
 
-    templates: [
-        {
-            name: "view",
-            template: viewTemplate,
-            path: "view",
-            filename: "{{name}}.view.xml"
-        },
-        {
-            name: "controller",
-            template: controllerTemplate,
-            path: "controller",
-            filename: "{{name}}.controller.js"
-        }
-    ]
-};
 
-const handleBarsReg = /\{\{([^}]+)\}\}/g;
-function makeTemplateTask(name, templateDescription) {
-    gulp.task(name, () => {
-        stringSrc("dummy", "").pipe(prompt.prompt(
-                templateDescription.params.map(p => {
+function expandIncludes(template, basepath) {
+    if (!template) return [];
+    var r = [template];
+
+    if (template.include) {
+        var includes = template.include.map(i => getTemplateDescription(i, basepath));
+        includes.map(i => expandIncludes(i, basepath)).forEach(a => r.push(...a));
+    }
+
+    return r;
+}
+
+function mergeParams(...templates) {
+    var params = {};
+    var result = [];
+
+    templates.forEach(template => {
+        template.params && template.params.forEach(parameter => {
+            if (!params[parameter.name]) {
+                params[parameter.name] = true;
+                parameter.description = (parameter.description || parameter.name) + " for " + template.name;
+                result.push(parameter);
+            }
+        });
+    });
+
+    return result;
+}
+
+function applyTemplate(responses, basepath, template, destination) {
+    gulp.src(path.join(basepath, template.name, "files", "**", "*"))
+        .pipe(replace(handleBarsReg, (m, name) => responses[name] || "{{" + name + "}}"))
+        .pipe(rename(file => {
+            file.basename = file.basename.replace(fileNameReg, (m, name) => responses[name] || "__" + name + "__");
+        }))
+        .pipe(gulp.dest(destination));
+}
+
+function makeTemplateTask(template, basepath) {
+    gulp.task(template.name, () => {
+        var parameters = template.params;
+        var includes = expandIncludes(template, basepath);
+        parameters = mergeParams(template, ...includes);
+
+        stringSrc("dummy", "")
+            .pipe(prompt.prompt(
+                parameters.map(p => {
                     var d = p.default;
                     if (typeof d === "function") {
-                        d = d();
+                        d = d(process.env.INIT_CWD);
                     }
                     return {
                         type: "input",
@@ -94,20 +87,47 @@ function makeTemplateTask(name, templateDescription) {
                         validate: p.validate
                     }})
             , (res) => {
-                templateDescription.templates.forEach(t => {
-                    stringSrc(t.filename.replace(handleBarsReg, (m, name) => res[name]), t.template)
-                        .pipe(replace(handleBarsReg, (m, name) => res[name]))
-                        .pipe(gulp.dest([process.env.INIT_CWD, "test", t.path].join("/")))
-
-                })
+                    includes.forEach(atemplate => {
+                        applyTemplate(res, basepath, atemplate, process.env.INIT_CWD);
+                    })
             }));
     });
 }
 
 
-gulp.task("Test", () => {
-    console.log(process.env);
-    console.log(process.cwd())
-});
+function getTemplateDescription(name, basepath) {
+    var description;
+    try {
+        description = require(`${basepath}/${name}/template.js`)
+    } catch (e) {
+        console.log(`Error: Cannot read template definition for ${basepath}/${name}/template.js`);
+        return;
+    }
 
-makeTemplateTask("View", tempDescrForView)
+    if(!description.name) {
+        description.name = name;
+    }
+
+    description.basepath = basepath;
+    return description;
+}
+
+function processTemplate(name, basepath) {
+    var description = getTemplateDescription(name, basepath);
+    if(description) {
+        makeTemplateTask(description, basepath);
+    }
+
+}
+
+function scanTemplatesFolder(path) {
+    fs.readdirSync(path).map(file => {
+       return [file, fs.lstatSync(path + "/" + file)]
+    }).forEach(([name, stat]) => {
+        if (stat.isDirectory()) {
+            processTemplate(name, path);
+        }
+    });
+}
+
+scanTemplatesFolder("./templates");
