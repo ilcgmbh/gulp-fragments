@@ -26,7 +26,7 @@ function getManifest(taskPath) {
 module.exports = {
     name: "View",
     description: "Creates a SAPUI5 XML View and the according controller (ES6) for it.",
-    include: ["Controller"],
+    include: [require("../Controller")],
     params:
         [
             { name: "namespace",
@@ -38,5 +38,7 @@ module.exports = {
                             }
                         } },
         { name: "name", description: "Viewname"}
-    ]
+    ],
+
+    files: __dirname
 };

@@ -37,7 +37,8 @@ module.exports = {
                         return m["sap.app"]["id"];
                     }
                 } },
-            { name: "name", description: "Name of the according view"},
-            { name: "test", description: "For testing"}
-        ]
+            { name: "name", description: "Name of the according view"}
+        ],
+
+    files: __dirname
 };

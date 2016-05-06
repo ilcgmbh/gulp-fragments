@@ -5,7 +5,7 @@
 module.exports = {
     name: "Application",
     description: "Creates a basic SAP UI5 Application.",
-    include: ["AppManifest", "View"],
+    include: ["AppManifest", require("../../templateModules/View")],
     params:
         [
             { name: "namespace", description: "Namespace"},

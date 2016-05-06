@@ -3,10 +3,12 @@
     <properties>
       <sourceFilesUrls>
         <item url="file://$PROJECT_DIR$/gulpfile.js" />
+        <item url="file://$PROJECT_DIR$/src/scaffolder.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
       <root url="file://$PROJECT_DIR$/gulpfile.js" />
+      <root url="file://$PROJECT_DIR$/src/scaffolder.js" />
     </CLASSES>
     <SOURCES />
   </library>
