@@ -16,7 +16,6 @@ import runSequence from "run-sequence";
 const handleBarsReg = /\{\{([^}]+)\}\}/g;
 const fileNameReg = /\_\_([^_]+)\_\_/g;
 
-
 /**
  * Creates a stream from a string. Only used for dummy purposes.
  * TODO: Find stack overflow reference
