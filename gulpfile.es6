@@ -21,7 +21,7 @@ createTemplateTasksForDirectory(gulp, path.join(__dirname, "templates"));
 var packageJson = require("./package.json");
 
 // Define sources to compile
-var sourceDirectories = ["./src"];
+var sourceDirectories = ["./src", "./test"];
 var allES6Sources = ["./gulpfile.es6", ...sourceDirectories.map(d => d + "/**/*.es6")];
 
 

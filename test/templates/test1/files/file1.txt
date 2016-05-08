@@ -1,0 +1,1 @@
+Static text with {{parameter1}} contents.

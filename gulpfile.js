@@ -46,8 +46,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 // Load package json data to reuse the babel settings from there
 var packageJson = require("./package.json");
 
-//
-var sourceDirectories = ["./src"];
+// Define sources to compile
+var sourceDirectories = ["./src", "./test"];
 var allES6Sources = ["./gulpfile.es6"].concat(_toConsumableArray(sourceDirectories.map(function (d) {
     return d + "/**/*.es6";
 })));

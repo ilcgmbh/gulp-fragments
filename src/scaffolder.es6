@@ -5,33 +5,16 @@
 import fs from 'fs';
 import path from 'path';
 
-import prompt from "gulp-prompt";
 import print from 'gulp-print';
 import rename from "gulp-rename";
 import replace from "gulp-replace";
 import gutil from "gulp-util";
 import runSequence from "run-sequence";
+import inquirer from "inquirer";
 
 
 const handleBarsReg = /\{\{([^}]+)\}\}/g;
 const fileNameReg = /\_\_([^_]+)\_\_/g;
-
-/**
- * Creates a stream from a string. Only used for dummy purposes.
- * TODO: Find stack overflow reference
- * TODO: Other solution for kickong off gulp-prompt
- * @param filename
- * @param string
- * @returns {*}
- */
-function stringSrc(filename, string) {
-    var src = require('stream').Readable({ objectMode: true });
-    src._read = function () {
-        this.push(new gutil.File({ cwd: "", base: "", path: filename, contents: new Buffer(string) }));
-        this.push(null)
-    };
-    return src
-}
 
 
 /**
@@ -90,12 +73,13 @@ function mergeParams(...templates) {
  * @param destination
  */
 function applyTemplate(gulp, responses, template, destination) {
-    console.log("Creating files for template ", template.name);
+    console.log("Creating files for template", template.name, "in", path.join(template.files, "files", "**", "*"));
+
     gulp.src(path.join(template.files, "files", "**", "*"))
         .pipe(replace(handleBarsReg, (m, name) => responses[name] || "{{" + name + "}}"))
         .pipe(rename(file => {
             file.basename = file.basename.replace(fileNameReg, (m, name) => responses[name] || "__" + name + "__");
-            console.log("\t\t" + file.basename);
+            console.log("\t\t" + file.basename + "." + file.extname + " -> " + destination);
         }))
         .pipe(gulp.dest(destination));
 }
@@ -137,7 +121,7 @@ function convertParameters(parameters) {
 function processTemplatesWithValues(gulp, templates, parameterValues) {
     templates.forEach(atemplate => {
         applyTemplate(gulp, parameterValues, atemplate, process.env.INIT_CWD);
-    })
+    });
 }
 
 /**
@@ -155,11 +139,8 @@ function makeTemplateTask(gulp, prefix, template) {
 
         parameters = mergeParams(template, ...includes);
 
-        stringSrc("dummy", "")
-            .pipe(prompt.prompt(
-                convertParameters(parameters),
-                processTemplatesWithValues.bind(null, gulp, includes)
-                ));
+        inquirer.prompt(convertParameters(parameters))
+            .then(processTemplatesWithValues.bind(null, gulp, includes));
     });
 }
 
