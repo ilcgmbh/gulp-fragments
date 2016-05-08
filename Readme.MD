@@ -1,7 +1,13 @@
 gulp-scaffold
 =============
 
-Automatically creates scaffolding tasks for filesystem based templates.
+Automatically creates scaffolding tasks for filesystem based templates. The templates support parameters for file contents
+and file names and reusage of templates within templates. Nothing more. you basically setup the files you want to be copied
+and describe your parameters. That's it. If you need fancier stuff like conditionals or more sophisticated user interaction 
+take a look at `slush` or `yeoman`.
+
+Templates are invoked directly using `gulp`. They can be invoked multiple times and with the dynamic filenames are great 
+for creating project fragments during the whole development process.
 
 # Installation
 
@@ -148,10 +154,15 @@ When scaffolding the system will merge all parameters and only asks the user onc
 Includes can be nested, so in our example the view template itself could include another templates. Includes work with modules
 and templates that reside in the same directory.
 
+# Default values for parameters
+
+# Validating parameters
+
 
 # TODOS
 
 * Define mapping of parameters when including
+* Use gulp-conflict
 
 
 # License
