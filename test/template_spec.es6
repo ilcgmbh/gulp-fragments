@@ -2,16 +2,25 @@
  * Created by Stephan on 06.05.2016.
  */
 
+import fs from 'fs';
+import memfs from 'memfs';
+import unionfs from 'unionfs';
+
+/*var mem = new memfs.Volume;
+mem.mountSync("./tmp");
+unionfs.use(fs).use(mem);
+unionfs.replace(fs);
+*/
+
+
 import {expect} from 'chai';
 import runSequence from 'run-sequence';
 import del from 'del';
 import path from 'path';
-import fs from 'fs';
 import gulp from "gulp";
 const exec = require('child_process').exec;
 
 import {createTemplateTasksForDirectory} from '../src/scaffolder'
-
 
 
 /**
@@ -35,11 +44,13 @@ function getFilesRecursive (folder) {
         if (stats.isDirectory()) {
             fileTree.push({
                 name: fileName,
+                path: folder + "/" + fileName,
                 children: getFilesRecursive(folder + '/' + fileName)
             });
         } else {
             fileTree.push({
-                name: fileName
+                name: fileName,
+                path: folder + "/" + fileName
             });
         }
     });
@@ -61,6 +72,16 @@ function checkDiretoryStructure(path, structure) {
                 if (!str[e.name]) return false;
                 if (typeof str[e.name] === "object") return false;
                 //console.log("...yes");
+
+                if (typeof str[e.name] === "string") {
+                    var c = fs.readFileSync(e.path, { encoding: "utf8" });
+                    if (c != str[e.name]) {
+                        console.log(c, "!=", str[e.name]);
+                        return false;
+
+                    }
+                }
+
 
             } else {
                 //console.log(`[${e.name}]`)
@@ -88,7 +109,7 @@ describe("Checking a directory structure", () => {
         expect(checkDiretoryStructure(path.join(__dirname, "templates", "test1"),
             {"template.js": 1, files: {
                 "__parameter1__file2.txt": 1,
-                "file1.txt": 1
+                "file1.txt": "Static text with {{parameter1}} contents."
             }}
         )).to.equal(true);
         expect(checkDiretoryStructure(path.join(__dirname, "templates", "test1"),
@@ -111,7 +132,7 @@ describe("Checking a directory structure", () => {
 
 function runTask(task, done) {
     return exec(`gulp ${task}`, {
-        cwd: path.join(__dirname, "tmp")
+        cwd: path.join("./tmp")
     }, () => {
         done();
     });
@@ -134,23 +155,36 @@ describe("Scaffolder", () => {
         });
 
         afterEach((done) => {
-            del(path.join(__dirname, "tmp", "**", "*")).then(() => {done()})
+
+        done();
+            //del(path.join(__dirname, "tmp", "**", "*")).then(() => {done()})
         });
 
         it("works", (done) => {
             var cp = runTask("Test1", done);
             cp.stdin.write("Value1\n");
+            expect(checkDiretoryStructure("./tmp", {
+                "file1.txt": "Static text with Value1 contents.",
+                "Value1_file2.txt": 1
+            })).to.equal(true);
         });
 
+        /*
         it("is provided the current username, time and date to use in a template", done => {
             var cp = runTask("Test2", done);
-            expect(checkDiretoryStructure(path.join(__dirname, "templates", "test1"),
-                {"template.js": 1, files: {
-                    "__parameter1__file2.txt": 1,
-                    "file1.txt": 1
-                }}
-            )).to.equal(true);
+            expect(checkDiretoryStructure("./tmp", {
+                "test.txt": "ölkj"
+            })).to.equal(true);
+            expect(fs.readFileSync("./tmp/test.txt", { encoding: "utf8"}).match(/\{/g)).to.be.not.ok;
         });
-    });
 
+        it("applies transforms to responses defined by a template", done => {
+            var cp = runTask("Test3", done);
+            cp.stdin.write("abcde");
+            expect(checkDiretoryStructure("./tmp", {
+                "test.txt": "abcde\nABCDE"
+            }))
+        });
+*/
+    });
 });

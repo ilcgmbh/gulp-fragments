@@ -34,7 +34,7 @@ The template description is a JavaScript called `template.js` file that exports 
                 { name: "applicationDescription", description: "Description"}
             ]
     };
-    
+   
 This describes the template and defines three parameters that the user will have to porivde values for when using the 
 template
 

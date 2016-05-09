@@ -23,8 +23,10 @@
     "gulp-watch": "^4.3.5",
     "inquirer": "^1.0.2",
     "lazypipe": "^1.0.1",
+    "memfs": "0.0.9",
     "mocha": "^2.4.5",
-    "run-sequence": "^1.1.5"
+    "run-sequence": "^1.1.5",
+    "unionfs": "0.0.6"
   },
   "babel": {
     "presets": [
