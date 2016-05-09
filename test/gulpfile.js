@@ -1,19 +1,9 @@
-'use strict';
+/**
+ * Created by stephan.smola on 09.05.2016.
+ */
 
-var _scaffolder = require('../src/scaffolder');
+var scaffolder = require("../src/scaffolder");
+var gulp = require("gulp");
+var path = require("path");
 
-var _gulp = require('gulp');
-
-var _gulp2 = _interopRequireDefault(_gulp);
-
-var _path = require('path');
-
-var _path2 = _interopRequireDefault(_path);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-console.log(__dirname); /**
-                         * Created by Stephan on 07.05.2016.
-                         */
-
-(0, _scaffolder.createTemplateTasksForDirectory)(_gulp2.default, _path2.default.join(__dirname, "templates"));
+scaffolder.createTemplateTasksForDirectory(gulp, path.join(__dirname, "templates"));

@@ -1,0 +1,9 @@
+{
+  "name": "gulp-scaffolder-{{name}}",
+  "version": "0.1.0",
+  "description": "",
+  "main": "template.js",
+  "keywords": ["gulp", "scaffolder", "template"],
+  "author": "",
+  "license": ""
+}

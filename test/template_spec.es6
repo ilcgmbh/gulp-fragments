@@ -10,15 +10,15 @@ import fs from 'fs';
 import gulp from "gulp";
 const exec = require('child_process').exec;
 
-
 import {createTemplateTasksForDirectory} from '../src/scaffolder'
+
 
 
 /**
  * Goes through the given directory to return all files and folders recursively
  * @author Ash Blue ash@blueashes.com
  * @example getFilesRecursive('./folder/sub-folder');
- * @requires Must include the file system module native to NodeJS, ex. var fs = require('fs');
+ * @requires Must include the files system module native to NodeJS, ex. var fs = require('fs');
  * @param {string} folder Folder location to search through
  * @returns {object} Nested tree of the found files
  * https://gist.github.com/ashblue/3916348
@@ -109,6 +109,14 @@ describe("Checking a directory structure", () => {
     });
 });
 
+function runTask(task, done) {
+    return exec(`gulp ${task}`, {
+        cwd: path.join(__dirname, "tmp")
+    }, () => {
+        done();
+    });
+}
+
 describe("Scaffolder", () => {
     it("creates a task for a template directory", () => {
         createTemplateTasksForDirectory(gulp, path.join(__dirname, "templates"));
@@ -130,13 +138,19 @@ describe("Scaffolder", () => {
         });
 
         it("works", (done) => {
-            var cp = exec("gulp Test1", {
-                cwd: path.join(__dirname, "tmp")
-            }, () => {
-                console.log("Done");
-                done();
-            });
+            var cp = runTask("Test1", done);
             cp.stdin.write("Value1\n");
-        })
-    })
+        });
+
+        it("is provided the current username, time and date to use in a template", done => {
+            var cp = runTask("Test2", done);
+            expect(checkDiretoryStructure(path.join(__dirname, "templates", "test1"),
+                {"template.js": 1, files: {
+                    "__parameter1__file2.txt": 1,
+                    "file1.txt": 1
+                }}
+            )).to.equal(true);
+        });
+    });
+
 });
