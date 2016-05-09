@@ -1,0 +1,13 @@
+{
+  "name": "gulp-scaffolder-module-template",
+  "version": "0.2.0",
+  "description": "",
+  "main": "template.js",
+  "keywords": [
+    "gulp",
+    "scaffolder",
+    "template"
+  ],
+  "author": "Stephan Smola",
+  "license": "MIT"
+}

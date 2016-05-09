@@ -41,7 +41,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
                                                                                                                                                                                                      */
 
 (0, _scaffolder.createTemplateTasksForDirectory)(_gulp2.default, _path2.default.join(__dirname, "templates"));
-//createTaskForModule(gulp, require("./templateModules/View"));
+(0, _scaffolder.createTaskForModule)(_gulp2.default, require(_path2.default.join(__dirname, "templateModules", "gulp-scaffolder-module-template")));
 
 // Load package json data to reuse the babel settings from there
 var packageJson = require("./package.json");
@@ -53,7 +53,7 @@ var allES6Sources = ["./gulpfile.es6"].concat(_toConsumableArray(sourceDirectori
 })));
 
 /**
- * Compile an ES6 file into a compiled ES5 file.
+ * Compile an ES6 files into a compiled ES5 files.
  */
 var compileES6File = (0, _lazypipe2.default)().pipe(_gulpBabel2.default, packageJson.babel);
 

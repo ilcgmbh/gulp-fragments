@@ -11,11 +11,11 @@ import replace from "gulp-replace";
 import gutil from "gulp-util";
 import runSequence from "run-sequence";
 import inquirer from "inquirer";
+import osLocale from "os-locale";
 
 
 const handleBarsReg = /\{\{([^}]+)\}\}/g;
 const fileNameReg = /\_\_([^_]+)\_\_/g;
-
 
 /**
  * Resolves all (nested) includes of a given template.
@@ -65,6 +65,26 @@ function mergeParams(...templates) {
     return result;
 }
 
+
+function copyResponses(responses) {
+    var r = {};
+    for( var p in responses) {
+        if (responses.hasOwnProperty(p)) {
+            r[p] = responses[p];
+        }
+    }
+    return r;
+}
+
+function transformResponses(template, responses) {
+    if (typeof template.transform === "function") {
+        var r = copyResponses(responses);
+        template.transform(r);
+        return r;
+    }
+    return responses;
+}
+
 /**
  * Applies a single template to a destination directory
  * @param gulp
@@ -75,11 +95,14 @@ function mergeParams(...templates) {
 function applyTemplate(gulp, responses, template, destination) {
     console.log("Creating files for template", template.name, "in", path.join(template.files, "files", "**", "*"));
 
+
+    var lResponses = transformResponses(template, responses);
+
     gulp.src(path.join(template.files, "files", "**", "*"))
-        .pipe(replace(handleBarsReg, (m, name) => responses[name] || "{{" + name + "}}"))
+        .pipe(replace(handleBarsReg, (m, name) => lResponses[name] || "{{" + name + "}}"))
         .pipe(rename(file => {
-            file.basename = file.basename.replace(fileNameReg, (m, name) => responses[name] || "__" + name + "__");
-            console.log("\t\t" + file.basename + "." + file.extname + " -> " + destination);
+            file.basename = file.basename.replace(fileNameReg, (m, name) => lResponses[name] || "__" + name + "__");
+            console.log("\t\t" + file.basename + file.extname + " -> " + destination);
         }))
         .pipe(gulp.dest(destination));
 }
@@ -90,15 +113,12 @@ function applyTemplate(gulp, responses, template, destination) {
  * @returns {{type: string, name: *, message: (string|string|string|string|string|string|*), default: (*|boolean|default), validate: *}}
  */
 function convertParam(p) {
-    var d = p.default;
-    if (typeof d === "function") {
-        d = d(process.env.INIT_CWD);
-    }
+
     return {
         type: "input",
         name: p.name,
         message: p.description,
-        default: d,
+        default: p.default,
         validate: p.validate
     }
 }
@@ -112,15 +132,44 @@ function convertParameters(parameters) {
     return parameters.map(convertParam)
 }
 
+
+function getUserName() {
+    //Win
+    return process.env.USERNAME;
+}
+
+/**
+ * Enrich anser object with defaults
+ */
+
+function mixinStandardParameters(responses) {
+    var r = copyResponses(responses);
+    
+    if (!r.USERNAME) {
+        r.USERNAME = getUserName();
+    }
+
+    var locale = osLocale.sync().replace("_", "-");
+    if (!r.DATE) {
+        r.DATE = new Date().toLocaleDateString(locale);
+    }
+    if (!r.TIME) {
+        r.TIME = new Date().toLocaleTimeString(locale);
+    }
+
+    return r;
+}
+
 /**
  * Takes parameter values and applies them to a set of templates using these values
  * @param gulp
  * @param templates
- * @param parameterValues
+ * @param answers
  */
-function processTemplatesWithValues(gulp, templates, parameterValues) {
+function processTemplatesWithValues(gulp, templates, answers) {
+    var ans = mixinStandardParameters(answers);
     templates.forEach(atemplate => {
-        applyTemplate(gulp, parameterValues, atemplate, process.env.INIT_CWD);
+        applyTemplate(gulp, ans, atemplate, process.env.INIT_CWD);
     });
 }
 
@@ -145,7 +194,7 @@ function makeTemplateTask(gulp, prefix, template) {
 }
 
 /**
- * Gets a file based template description
+ * Gets a files based template description
  * @param name
  * @param basepath
  * @returns {*}
@@ -168,7 +217,7 @@ function getTemplateDescription(name, basepath) {
 }
 
 /**
- * Takes a file based template and creates a task for it.
+ * Takes a files based template and creates a task for it.
  * @param gulp
  * @param name
  * @param prefix

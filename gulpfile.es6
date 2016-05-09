@@ -14,7 +14,7 @@ import gulp from "gulp";
 import {createTemplateTasksForDirectory, createTaskForModule} from './src/scaffolder';
 
 createTemplateTasksForDirectory(gulp, path.join(__dirname, "templates"));
-//createTaskForModule(gulp, require("./templateModules/View"));
+createTaskForModule(gulp, require(path.join(__dirname, "templateModules", "gulp-scaffolder-module-template")));
 
 
 // Load package json data to reuse the babel settings from there
@@ -26,7 +26,7 @@ var allES6Sources = ["./gulpfile.es6", ...sourceDirectories.map(d => d + "/**/*.
 
 
 /**
- * Compile an ES6 file into a compiled ES5 file.
+ * Compile an ES6 files into a compiled ES5 files.
  */
 const compileES6File = lazypipe()
     .pipe(babel, packageJson.babel);
