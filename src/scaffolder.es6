@@ -78,6 +78,7 @@ function copyResponses(responses) {
 
 function transformResponses(template, responses) {
     if (typeof template.transform === "function") {
+        console.log("transforming")
         var r = copyResponses(responses);
         template.transform(r);
         return r;

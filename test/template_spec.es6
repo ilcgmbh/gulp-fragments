@@ -3,16 +3,6 @@
  */
 
 import fs from 'fs';
-import memfs from 'memfs';
-import unionfs from 'unionfs';
-
-/*var mem = new memfs.Volume;
-mem.mountSync("./tmp");
-unionfs.use(fs).use(mem);
-unionfs.replace(fs);
-*/
-
-
 import {expect} from 'chai';
 import runSequence from 'run-sequence';
 import del from 'del';
@@ -22,118 +12,30 @@ const exec = require('child_process').exec;
 
 import {createTemplateTasksForDirectory} from '../src/scaffolder'
 
+const tempPath = path.join(__dirname, "tmp");
 
-/**
- * Goes through the given directory to return all files and folders recursively
- * @author Ash Blue ash@blueashes.com
- * @example getFilesRecursive('./folder/sub-folder');
- * @requires Must include the files system module native to NodeJS, ex. var fs = require('fs');
- * @param {string} folder Folder location to search through
- * @returns {object} Nested tree of the found files
- * https://gist.github.com/ashblue/3916348
- */
-// var fs = require('fs');
-function getFilesRecursive (folder) {
-    var fileContents = fs.readdirSync(folder),
-        fileTree = [],
-        stats;
-
-    fileContents.forEach(function (fileName) {
-        stats = fs.lstatSync(folder + '/' + fileName);
-
-        if (stats.isDirectory()) {
-            fileTree.push({
-                name: fileName,
-                path: folder + "/" + fileName,
-                children: getFilesRecursive(folder + '/' + fileName)
-            });
-        } else {
-            fileTree.push({
-                name: fileName,
-                path: folder + "/" + fileName
-            });
-        }
-    });
-
-    return fileTree;
-}
-
-
-
-
-function checkDiretoryStructure(path, structure) {
-
-    var s = getFilesRecursive(path);
-    function check(files, str) {
-        for (var i = 0; i < files.length; i++) {
-            let e = files[i];
-            if (!e.children) {
-                //console.log(e.name);
-                if (!str[e.name]) return false;
-                if (typeof str[e.name] === "object") return false;
-                //console.log("...yes");
-
-                if (typeof str[e.name] === "string") {
-                    var c = fs.readFileSync(e.path, { encoding: "utf8" });
-                    if (c != str[e.name]) {
-                        console.log(c, "!=", str[e.name]);
-                        return false;
-
-                    }
-                }
-
-
-            } else {
-                //console.log(`[${e.name}]`)
-                if (!str[e.name]) {
-                    return false;
-                }
-                if (typeof str[e.name] !== "object") return false;
-                if (!check(e.children, str[e.name])) {
-                    return false
-                }
-                //console.log("...yes");
-
-            }
-        }
-        return true;
+function checkTempFile(name, contents = null) {
+    var f;
+    try {
+        f = fs.readFileSync(path.join(tempPath,name), { encoding: "utf8"});
+    } catch(e) {
+        console.log("Cannot read", path.join(tempPath,name), e.message)
+        f = null;
     }
-
-
-    return check(s, structure);
+    expect(f).to.not.equal(null);
+    if (typeof contents === "string") {
+        expect(f).to.equal(contents);
+    }
 }
 
 
-describe("Checking a directory structure", () => {
-    it("works", () => {
-        expect(checkDiretoryStructure(path.join(__dirname, "templates", "test1"),
-            {"template.js": 1, files: {
-                "__parameter1__file2.txt": 1,
-                "file1.txt": "Static text with {{parameter1}} contents."
-            }}
-        )).to.equal(true);
-        expect(checkDiretoryStructure(path.join(__dirname, "templates", "test1"),
-            {"template.js": 1, files: {
-                "_parameter1__file2.txt": 1,
-                "file1.txt": 1
-            }}
-        )).to.equal(false);
-        expect(checkDiretoryStructure(path.join(__dirname, "templates", "test1"),
-            {"template.js": 1, files: 1}
-        )).to.equal(false);
-        expect(checkDiretoryStructure(path.join(__dirname, "templates", "test1"),
-            {"1template.js": 1, files: {
-                "__parameter1__file2.txt": 1,
-                "file.txt": 1
-            }}
-        )).to.equal(false);
-    });
-});
 
 function runTask(task, done) {
     return exec(`gulp ${task}`, {
-        cwd: path.join("./tmp")
-    }, () => {
+        cwd: tempPath
+    }, (stdout, stderr) => {
+        console.log(stdout)
+        console.log(stderr)
         done();
     });
 }
@@ -147,44 +49,66 @@ describe("Scaffolder", () => {
 
     describe("creates a task that", () => {
         before(() => {
-            var dir = path.join(__dirname, "tmp");
-
-            if (!fs.existsSync(dir)){
-                fs.mkdirSync(dir);
+            if (!fs.existsSync(tempPath)){
+                fs.mkdirSync(tempPath);
             }
         });
 
         afterEach((done) => {
-
-        done();
-            //del(path.join(__dirname, "tmp", "**", "*")).then(() => {done()})
+            done();
+            return;
+            del(path.join(__dirname, "tmp", "**", "*")).then(() => done())
         });
 
-        it("works", (done) => {
-            var cp = runTask("Test1", done);
+        it("creates files based on templates", (done) => {
+            var cp = runTask("Test1", () => {
+                checkTempFile("file1.txt", "Static text with Value1 contents.");
+                checkTempFile("Value1file2.txt");
+                done();
+            });
             cp.stdin.write("Value1\n");
-            expect(checkDiretoryStructure("./tmp", {
-                "file1.txt": "Static text with Value1 contents.",
-                "Value1_file2.txt": 1
-            })).to.equal(true);
         });
 
-        /*
+
+
         it("is provided the current username, time and date to use in a template", done => {
-            var cp = runTask("Test2", done);
-            expect(checkDiretoryStructure("./tmp", {
-                "test.txt": "ölkj"
-            })).to.equal(true);
-            expect(fs.readFileSync("./tmp/test.txt", { encoding: "utf8"}).match(/\{/g)).to.be.not.ok;
+            var cp = runTask("Test2", () => {
+                checkTempFile("test.txt");
+                done()
+            });
         });
+
 
         it("applies transforms to responses defined by a template", done => {
-            var cp = runTask("Test3", done);
-            cp.stdin.write("abcde");
-            expect(checkDiretoryStructure("./tmp", {
-                "test.txt": "abcde\nABCDE"
-            }))
+            var cp = runTask("Test3", () => {
+                checkTempFile("test.txt", "abcde\r\nABCDE");
+                done();
+            });
+            cp.stdin.write("abcde\n");
         });
-*/
+
+
+        it("can validate parameter values", () => {
+            var cp = runTask("Test4", () => {
+                checkTempFile("test4.txt", "seven");
+                done();
+            });
+            cp.stdin.write("five\n");
+            cp.stdin.write("five\n");
+            cp.stdin.write("five\n");
+            cp.stdin.write("five\n");
+            cp.stdin.write("five\n");
+            cp.stdin.write("five\n");
+            cp.stdin.write("five\n");
+            cp.stdin.write("seven\n");
+        });
+
+        it("can have default values", () => {
+            var cp = runTask("Test5", () => {
+                checkTempFile("test5.txt", "DefaultValue\r\nHELPER");
+                done();
+            });
+            cp.stdin.write("\nhelper\n\n");
+        });
     });
 });

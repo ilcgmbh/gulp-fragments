@@ -7,8 +7,9 @@ module.exports = {
     description: "Default values",
     params: [
         { name: "fixed", description: "Fixed default value", default: "DefaultValue" },
+        { name: "helper", description: "Helper value"},
         { name: "dynamic", description: "Dynamic default values", default: function(answers) {
-            return answers.fixed.toUpperCase();
+            return answers.helper.toUpperCase();
         }}
     ]
 };

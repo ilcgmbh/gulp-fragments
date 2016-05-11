@@ -3,7 +3,7 @@
  */
 
 module.exports = {
-    name: "Test5",
+    name: "Test4",
     description: "Validation",
     params: [
         { name: "five",
@@ -13,4 +13,4 @@ module.exports = {
             }
         }
     ]
-}
+};
