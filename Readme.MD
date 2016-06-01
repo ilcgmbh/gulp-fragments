@@ -1,17 +1,19 @@
 gulp-scaffold
 =============
 
-Automatically creates scaffolding tasks for filesystem based templates. The templates support parameters for file contents
-and file names and reusage of templates within templates. Nothing more. you basically setup the files you want to be copied
-and describe your parameters. That's it. If you need fancier stuff like conditionals or more sophisticated user interaction 
-take a look at `slush` or `yeoman`.
+Automatically creates scaffolding tasks for filesystem based templates. 
 
-Templates are invoked directly using `gulp`. They can be invoked multiple times and with the dynamic filenames are great 
+The templates support parameters for file contents
+and file names and reusage of templates within templates. Nothing more. You basically setup the files you want to be copied
+and describe your parameters. That's it. If you need fancier stuff like conditionals or more sophisticated user interaction 
+take a look at [slush](http://slushjs.github.io/) or [yeoman](http://yeoman.io/).
+
+Templates are invoked directly using [gulp](http://gulpjs.com/) from local gulp files. They can be invoked multiple times and with the dynamic filenames are great 
 for creating project fragments during the whole development process.
 
 # Installation
 
-`npm install gulp-scaffold`
+`npm install -SD gulp-scaffold`
 
 # Defining a template
 
@@ -20,7 +22,7 @@ template description
 
 ## The template description
 
-The template description is a JavaScript called `template.js` file that exports metadata and the parameters supported by the template.
+The template description is a JavaScript file called `template.js` that exports metadata and the parameters supported by the template.
 
 **Example**
 
@@ -50,9 +52,11 @@ When you want the file to be named using a parameter surround the parameter name
     
 This will generate a file ViewView1, when the user gives the value `View1` for the parameter `viewname`.
 
+Parameters that are referenced in the filename but don't exist in the template will be ignored. 
+
 ### Using parameters in file contents
 
-To use a parameter in the file itself surround its name by double handlebars `{{paramname}}`
+To use a parameter in the file itself surround its name by double curly braces `{{paramname}}`
 
     sap.ui.define([
         "sap/ui/core/UIComponent"
@@ -70,6 +74,8 @@ To use a parameter in the file itself surround its name by double handlebars `{{
         });
     });
  
+Parameters that are referenced in the file but don't exist in the template will be ignored.
+
 ## The complete template
 
 The complete template might look like this:
@@ -103,7 +109,7 @@ First add a `package.json` to your template directory that has at least the `mai
       "main": "template.js"
     }
     
-Second add one specific line to your `template.js` file. 
+Second add one specific value `files` to your `template.js` file. 
 
 
     module.exports = {
@@ -131,7 +137,7 @@ Now you can define your gulp task like so
 
 # Reusing templates in other templates
  
-Imagine you have a template that defines an application and you application consists of views. So you define a template for
+Imagine you have a template that defines an application and your application consists of views. So you define a template for
 views as well, so everytime you create a new view you can use that template. Now you want your application template to create
  the first view so the user can get started right away. You can achieve this by including you view template into your application
  template.
@@ -156,13 +162,56 @@ and templates that reside in the same directory.
 
 # Default values for parameters
 
+You can define default values for your parameters.
+
+__Static default values__
+   
+    { name: "applicationTitle", description: "Title"},
+    
+__Dynamic default values__
+
+    { name: "applicationTitle", description: answers => answers.namespace + "App" },
+
+For dynamic defaults you will be provided with all answers that are already given.
+
 # Validating parameters
 
+You can use all validation mechanisms that [inquirer](https://github.com/SBoudrias/Inquirer.js/) provides.
 
-# TODOS
+__If no validation is given a default validation will be used that will prevent empty values__
 
-* Define mapping of parameters when including
-* Use gulp-conflict
+# Transforming answers
+
+After all answers are given you can specify a function to transform these answers
+
+    module.exports = {
+    
+        name: "Test3",
+        description: "post transformation of parameters",
+        params: [
+            { name: "value", description: "A value"}
+        ],
+        transform: answers => answers.uppercase = ("" + answers.value).toUpperCase()        
+    };
+
+You can modify given answers or create new parameters with values.
+
+# Creating a main directory
+
+A template can define that it will create a main directory using the parameter `createDir` in the template definition.
+
+`createDir` supports the same syntax that works for filenames. Using double underscores `__` allows you to create a 
+directory based on a parameter value.  
+
+    module.exports = {
+    
+        name: "Test3",
+        description: "post transformation of parameters",
+        createDir: "Directory__name__",
+        params: [
+            { name: "value", description: "A value"}
+        ]        
+    };
 
 
 # License
