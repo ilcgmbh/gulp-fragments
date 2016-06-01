@@ -11,11 +11,12 @@ import del from 'del';
 
 import path from 'path';
 import gulp from "gulp";
+/*
 import {createTemplateTasksForDirectory, createTaskForModule} from './src/scaffolder';
 
 createTemplateTasksForDirectory(gulp, path.join(__dirname, "templates"));
 createTaskForModule(gulp, require(path.join(__dirname, "templateModules", "gulp-scaffolder-module-template")));
-
+*/
 
 // Load package json data to reuse the babel settings from there
 var packageJson = require("./package.json");

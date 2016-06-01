@@ -12,10 +12,11 @@ import gutil from "gulp-util";
 import runSequence from "run-sequence";
 import inquirer from "inquirer";
 import osLocale from "os-locale";
-
+import conflict from 'gulp-conflict';
 
 const handleBarsReg = /\{\{([^}]+)\}\}/g;
 const fileNameReg = /\_\_([^_]+)\_\_/g;
+
 
 /**
  * Resolves all (nested) includes of a given template.
@@ -94,18 +95,20 @@ function transformResponses(template, responses) {
  * @param destination
  */
 function applyTemplate(gulp, responses, template, destination) {
+    var lResponses = transformResponses(template, responses);
+
     console.log("Creating files for template", template.name, "in", path.join(template.files, "files", "**", "*"));
 
-
-    var lResponses = transformResponses(template, responses);
+    var dest = destination;
 
     gulp.src(path.join(template.files, "files", "**", "*"))
         .pipe(replace(handleBarsReg, (m, name) => lResponses[name] || "{{" + name + "}}"))
         .pipe(rename(file => {
             file.basename = file.basename.replace(fileNameReg, (m, name) => lResponses[name] || "__" + name + "__");
-            console.log("\t\t" + file.basename + file.extname + " -> " + destination);
+            console.log("\t\t" + file.basename + file.extname + " -> " + dest);
         }))
-        .pipe(gulp.dest(destination));
+        .pipe(conflict(dest, { defaultChoice : "n"}))
+        .pipe(gulp.dest(dest));
 }
 
 /**
@@ -120,7 +123,7 @@ function convertParam(p) {
         name: p.name,
         message: p.description,
         default: p.default,
-        validate: p.validate
+        validate: p.validate || (v => v != "")
     }
 }
 
@@ -165,12 +168,29 @@ function mixinStandardParameters(responses) {
  * Takes parameter values and applies them to a set of templates using these values
  * @param gulp
  * @param templates
- * @param answers
+ * @param responses
+ * @param rootTemplate the template that initiated the creation
  */
-function processTemplatesWithValues(gulp, templates, answers) {
-    var ans = mixinStandardParameters(answers);
+function processTemplatesWithValues(gulp, templates, rootTemplate, responses) {
+    var lResponses = transformResponses(rootTemplate, responses);
+
+    var dest = process.env.INIT_CWD;
+    if (rootTemplate.createDir) {
+        console.log("Preparing target directory name");
+        try {
+            var dirName = rootTemplate.createDir.replace(fileNameReg, (m, name) => lResponses[name] || "__" + name + "__");
+            console.log(dest);
+            dest = path.join(dest, dirName);
+            console.log(dest);
+        } catch(e) {
+            console.log(e.stack);
+            return;
+        }
+    }
+
+    var ans = mixinStandardParameters(responses);
     templates.forEach(atemplate => {
-        applyTemplate(gulp, ans, atemplate, process.env.INIT_CWD);
+        applyTemplate(gulp, ans, atemplate, dest);
     });
 }
 
@@ -190,7 +210,7 @@ function makeTemplateTask(gulp, prefix, template) {
         parameters = mergeParams(template, ...includes);
 
         inquirer.prompt(convertParameters(parameters))
-            .then(processTemplatesWithValues.bind(null, gulp, includes));
+            .then(processTemplatesWithValues.bind(null, gulp, includes, template));
     });
 }
 

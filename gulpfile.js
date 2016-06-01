@@ -32,16 +32,18 @@ var _gulp = require('gulp');
 
 var _gulp2 = _interopRequireDefault(_gulp);
 
-var _scaffolder = require('./src/scaffolder');
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } /**
                                                                                                                                                                                                      * Created by stephan on 04.05.16.
                                                                                                                                                                                                      */
 
-(0, _scaffolder.createTemplateTasksForDirectory)(_gulp2.default, _path2.default.join(__dirname, "templates"));
-(0, _scaffolder.createTaskForModule)(_gulp2.default, require(_path2.default.join(__dirname, "templateModules", "gulp-scaffolder-module-template")));
+/*
+import {createTemplateTasksForDirectory, createTaskForModule} from './src/scaffolder';
+
+createTemplateTasksForDirectory(gulp, path.join(__dirname, "templates"));
+createTaskForModule(gulp, require(path.join(__dirname, "templateModules", "gulp-scaffolder-module-template")));
+*/
 
 // Load package json data to reuse the babel settings from there
 var packageJson = require("./package.json");
