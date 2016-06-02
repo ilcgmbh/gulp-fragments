@@ -1,8 +1,7 @@
 gulp-fragments
 ==============
 
-Automatically creates scaffolding tasks for filesystem based templates. 
-These templates can be used to create project fragments or complete projects.  
+Build project fragements (sets of artifacts) from filesystem based templates using a gulp task.  
 
 The templates support parameters for file contents
 and file names and reusage of templates within templates. Nothing more. You basically setup the files you want to be copied
