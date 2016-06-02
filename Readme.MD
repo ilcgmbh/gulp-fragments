@@ -93,7 +93,7 @@ The complete template might look like this:
     import gulp from 'gulp'
     import {createTemplateTasksForDirectory} from 'gulp-scaffold'
     
-    createTemplateTasksForDirectory(gulp, `path/to/your/templates');
+    createTemplateTasksForDirectory(gulp, 'path/to/your/templates');
     
 `createTemplateTasksForDirectory` will scan the whole directory given and create a task for every template it finds using
 either the name of the template folder or the name given in the `template.js` file.
