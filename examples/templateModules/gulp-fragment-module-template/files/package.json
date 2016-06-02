@@ -1,5 +1,5 @@
 {
-  "name": "gulp-scaffolder-{{name}}",
+  "name": "gulp-fragment-{{name}}",
   "version": "0.1.0",
   "description": "",
   "main": "template.js",

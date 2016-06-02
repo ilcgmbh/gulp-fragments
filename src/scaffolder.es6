@@ -14,7 +14,7 @@ import inquirer from "inquirer";
 import osLocale from "os-locale";
 import conflict from 'gulp-conflict';
 
-const handleBarsReg = /\{\{([^}]+)\}\}/g;
+const contentReg = /\{\{([^}]+)\}\}/g;
 const fileNameReg = /\_\_([^_]+)\_\_/g;
 
 
@@ -102,7 +102,7 @@ function applyTemplate(gulp, responses, template, destination) {
     var dest = destination;
 
     gulp.src(path.join(template.files, "files", "**", "*"))
-        .pipe(replace(handleBarsReg, (m, name) => lResponses[name] || "{{" + name + "}}"))
+        .pipe(replace(contentReg, (m, name) => lResponses[name] || "{{" + name + "}}"))
         .pipe(rename(file => {
             file.basename = file.basename.replace(fileNameReg, (m, name) => lResponses[name] || "__" + name + "__");
             console.log("\t\t" + file.basename + file.extname + " -> " + dest);

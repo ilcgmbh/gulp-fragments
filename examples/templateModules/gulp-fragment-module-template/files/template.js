@@ -1,14 +1,18 @@
 /**
- * Created by stephan.smola on 09.05.2016.
+ * Created by {{USER}} on {{DATE}}.
  */
 
+
 module.exports = {
-    name: "TemplateModule",
-    description: "Creates a new folder structure for a template module",
+    name: "{{name}}",
+    description: "{{description}}",
 
     params: [
+        /* Add your parameters here
         { name: "name", description: "Name of the Template"},
         { name: "description", description: "Description of the Template"}
+
+        */
     ],
 
     files: __dirname

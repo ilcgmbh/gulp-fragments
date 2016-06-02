@@ -1,5 +1,5 @@
 /**
- * Created by stephan.smola on 06.05.2016.
+ * Created by {{USER}} on {{DATE}}.
  */
 
 sap.ui.define([

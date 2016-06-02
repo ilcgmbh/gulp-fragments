@@ -1,3 +1,7 @@
+/**
+ * Created by {{USER}} on {{DATE}}.
+ */
+
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast"
