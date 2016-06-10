@@ -3,13 +3,13 @@ gulp-fragments
 
 Build project fragements (sets of artifacts) from filesystem based templates using a gulp task.  
 
-The templates support parameters for file contents
-and file names and reusage of templates within templates. Nothing more. You basically setup the files you want to be copied
-and describe your parameters. That's it. If you need fancier stuff like conditionals or more sophisticated user interaction 
-take a look at [slush](http://slushjs.github.io/) or [yeoman](http://yeoman.io/).
+The templates support parameters for file contents and file names and reusage of templates within templates. 
+Nothing more. You basically setup the files you want to be copied and describe your parameters. That's it. If you need 
+fancier stuff like conditionals or more sophisticated user interaction take a look at [slush](http://slushjs.github.io/) 
+or [yeoman](http://yeoman.io/).
 
-Templates are invoked directly using [gulp](http://gulpjs.com/) from local gulp files. They can be invoked multiple times and with the dynamic filenames are great 
-for creating project fragments during the whole development process.
+Templates are invoked directly using [gulp](http://gulpjs.com/) from local gulp files. They can be invoked multiple 
+times and with the dynamic filenames are great for creating project fragments during the whole development process.
 
 # Installation
 
@@ -18,7 +18,7 @@ for creating project fragments during the whole development process.
 # Defining a template
 
 A template consists of a file structure containing the files that are reproduced when using the template and a
-template description
+template description.
 
 ## The template description
 
@@ -132,14 +132,14 @@ Now you can define your gulp task like so
     import gulp from 'gulp'
     import {createTemplateTasksForModule} from 'gulp-scaffold'
     
-    createTemplateTasksForDirectory(gulp, require("templateModuleName");
+    createTaskForModule(gulp, require("templateModuleName");
 
 
 # Reusing templates in other templates
  
 Imagine you have a template that defines an application and your application consists of views. So you define a template for
 views as well, so everytime you create a new view you can use that template. Now you want your application template to create
- the first view so the user can get started right away. You can achieve this by including you view template into your application
+ the first view so the user can get started right away. You can achieve this by including your view template into your application
  template.
  
      module.exports = {
@@ -207,7 +207,7 @@ directory based on a parameter value.
     
         name: "Test3",
         description: "post transformation of parameters",
-        createDir: "Directory__name__",
+        createDir: "Directory__value__",
         params: [
             { name: "value", description: "A value"}
         ]        
