@@ -1,6 +1,10 @@
 {
   "name": "gulp-fragments",
   "version": "0.5.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ilcgmbh/gulp-fragments"
+  },
   "description": "",
   "main": "./src/scaffolder.js",
   "scripts": {
