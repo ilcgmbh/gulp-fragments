@@ -201,7 +201,7 @@ function processTemplatesWithValues(gulp, templates, rootTemplate, responses) {
  * @param template
  */
 function makeTemplateTask(gulp, prefix, template) {
-    gulp.task((prefix || "") + template.name, () => {
+    gulp.task((prefix || "") + template.name, (done) => {
         var parameters = template.params;
         var includes = expandIncludes(template);
 
@@ -210,7 +210,12 @@ function makeTemplateTask(gulp, prefix, template) {
         parameters = mergeParams(template, ...includes);
 
         inquirer.prompt(convertParameters(parameters))
-            .then(processTemplatesWithValues.bind(null, gulp, includes, template));
+            .then(answers => {
+                processTemplatesWithValues(gulp, includes, template, answers);
+                done();
+            });
+
+
     });
 }
 
