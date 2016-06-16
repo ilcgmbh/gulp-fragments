@@ -19,7 +19,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.4",
     "gulp-util": "^3.0.7",
-    "inquirer": "^1.0.2",cd
+    "inquirer": "^1.0.2",
     "os-locale": "^1.4.0"
   },
   "devDependencies": {
