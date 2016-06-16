@@ -251,7 +251,7 @@ function processTemplatesWithValues(gulp, templates, rootTemplate, responses) {
  * @param template
  */
 function makeTemplateTask(gulp, prefix, template) {
-    gulp.task((prefix || "") + template.name, function () {
+    gulp.task((prefix || "") + template.name, function (done) {
         var parameters = template.params;
         var includes = expandIncludes(template);
 
@@ -261,7 +261,10 @@ function makeTemplateTask(gulp, prefix, template) {
 
         parameters = mergeParams.apply(undefined, [template].concat(_toConsumableArray(includes)));
 
-        _inquirer2.default.prompt(convertParameters(parameters)).then(processTemplatesWithValues.bind(null, gulp, includes, template));
+        _inquirer2.default.prompt(convertParameters(parameters)).then(function (answers) {
+            processTemplatesWithValues(gulp, includes, template, answers);
+            done();
+        });
     });
 }
 

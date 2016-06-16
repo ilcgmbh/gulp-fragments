@@ -12,7 +12,7 @@ times and with the dynamic filenames are great for creating project fragments du
 
 # Installation
 
-`npm install -SD gulp-scaffold`
+`npm install -SD gulp-fragments`
 
 # Defining a template
 
