@@ -5,7 +5,7 @@
     "type": "git",
     "url": "https://github.com/ilcgmbh/gulp-fragments"
   },
-  "description": "",
+  "description": "Build project fragements (sets of artifacts) from filesystem based templates using a gulp task.",
   "main": "./src/scaffolder.js",
   "scripts": {
     "test": "mocha"
