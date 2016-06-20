@@ -11,7 +11,7 @@
     "test": "mocha"
   },
   "keywords": [],
-  "author": "ILC GmbH, Stephan Smola",
+  "author": "ILC GmbH <opensource@ilc-solutions.de>",
   "license": "MIT",
   "dependencies": {
     "gulp-conflict": "^0.4.0",
